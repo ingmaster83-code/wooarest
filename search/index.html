@@ -28,7 +28,7 @@ let allForests = [];
   const resp = await fetch('/search_index.json');
   allForests = await resp.json();
   fuse = new Fuse(allForests, {
-    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType'],
+    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address'],
     threshold: 0.35,
     minMatchCharLength: 1,
   });
@@ -53,6 +53,19 @@ function doSearch() {
   }
   grid.innerHTML = results.map(r => {
     const f = r.item;
+    if (f.kind === 'healing') {
+      return `<a class="camp-card" href="/healing/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0);">🌿</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.healingNm}</div>
+          <div class="camp-card-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+          <div class="camp-card-tags">
+            ${f.manageType ? `<span class="tag tag-type">${f.manageType}</span>` : ''}
+            <span class="tag tag-env">🌿 치유의숲</span>
+          </div>
+        </div>
+      </a>`;
+    }
     return `<a class="camp-card" href="/forest/${f.slug}/">
       <div class="camp-card-img-placeholder">🌲</div>
       <div class="camp-card-body">

@@ -78,6 +78,17 @@ description: 전국 자연휴양림 위치, 요금, 시설, 숙박 가능 여부
     <p style="color:#6B7280;">로딩 중...</p>
   </div>
 </div>
+
+<!-- 치유의숲 -->
+<div style="background:white;">
+<div class="section" style="padding-top:40px;padding-bottom:40px;">
+  <h2 class="section-title">🌿 치유의숲 <span id="healingCount" style="font-size:.85rem;color:#6B7280;font-weight:400;"></span></h2>
+  <p style="color:#6B7280;margin-bottom:20px;font-size:.92rem;">숙박이 아닌 당일 산림치유 프로그램을 운영하는 치유의숲도 함께 확인하세요.</p>
+  <div class="camp-grid" id="healingForests">
+    <p style="color:#6B7280;">로딩 중...</p>
+  </div>
+</div>
+</div>
 </div>
 <aside class="tool-sidebar"></aside>
 </div>
@@ -93,12 +104,13 @@ async function loadIndex() {
   const resp = await fetch('/search_index.json');
   fuseIndex = await resp.json();
   fuse = new Fuse(fuseIndex, {
-    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType'],
+    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address'],
     threshold: 0.35,
     minMatchCharLength: 1,
   });
   updateCounts();
   renderStay();
+  renderHealing();
 }
 
 function updateCounts() {
@@ -113,8 +125,15 @@ function updateCounts() {
 
 function renderStay() {
   if (!fuseIndex) return;
-  const stay = fuseIndex.filter(f => f.stayngPosblYn === 'Y').slice(0, 12);
-  document.getElementById('stayForests').innerHTML = stay.map(forestCard).join('');
+  const stay = fuseIndex.filter(f => f.kind === 'forest' && f.stayngPosblYn === 'Y').slice(0, 12);
+  document.getElementById('stayForests').innerHTML = stay.map(itemCard).join('');
+}
+
+function renderHealing() {
+  if (!fuseIndex) return;
+  const healing = fuseIndex.filter(f => f.kind === 'healing');
+  document.getElementById('healingCount').textContent = `총 ${healing.length}곳`;
+  document.getElementById('healingForests').innerHTML = healing.slice(0, 12).map(itemCard).join('');
 }
 
 function doSearch() {
@@ -135,7 +154,20 @@ function doSearch() {
   });
 }
 
-function forestCard(f) {
+function itemCard(f) {
+  if (f.kind === 'healing') {
+    return `<a class="camp-card" href="/healing/${f.slug}/">
+      <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0);">🌿</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.healingNm}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags">
+          ${f.manageType ? `<span class="tag tag-type">${f.manageType}</span>` : ''}
+          <span class="tag tag-env">🌿 치유의숲</span>
+        </div>
+      </div>
+    </a>`;
+  }
   return `<a class="camp-card" href="/forest/${f.slug}/">
     <div class="camp-card-img-placeholder">🌲</div>
     <div class="camp-card-body">
@@ -150,6 +182,18 @@ function forestCard(f) {
 }
 
 function searchResultItem(f) {
+  if (f.kind === 'healing') {
+    return `<div class="search-result-item">
+      <a href="/healing/${f.slug}/">
+        <div class="search-result-thumb" style="background:#bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:6px;">🌿</div>
+        <div>
+          <div class="search-result-name">${f.healingNm}</div>
+          <div class="search-result-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+          <span class="search-result-tag">🌿 치유의숲${f.manageType ? ' · ' + f.manageType : ''}</span>
+        </div>
+      </a>
+    </div>`;
+  }
   return `<div class="search-result-item">
     <a href="/forest/${f.slug}/">
       <div class="search-result-thumb" style="background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:6px;">🌲</div>

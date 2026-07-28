@@ -157,7 +157,7 @@ layout: default
     const all = await resp.json();
 
     const regionForests = all
-      .filter(f => f.doShort === currentRegion && f.slug !== currentSlug)
+      .filter(f => f.kind === 'forest' && f.doShort === currentRegion && f.slug !== currentSlug)
       .sort((a,b) => (a.sigungu === currentSigungu ? -1 : 1))
       .slice(0, 6);
 

@@ -37,6 +37,13 @@ layout: default
     <p style="color:#6B7280;">로딩 중...</p>
   </div>
 
+  <!-- 이 지역 치유의숲 -->
+  <div id="healingSection" style="display:none;margin-top:48px;">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🌿 {{ page.do_name }} 치유의숲</h2>
+    <p style="color:#6B7280;font-size:.88rem;margin-bottom:16px;">숙박이 아닌 당일 산림치유 프로그램을 운영하는 곳입니다.</p>
+    <div class="camp-grid" id="healingGrid"></div>
+  </div>
+
   <!-- 안내 텍스트 -->
   <div style="margin-top:40px;background:#F9FAFB;border-radius:14px;padding:24px 28px;">
     <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px;">{{ page.do_name }} 자연휴양림 이용 안내</h2>
@@ -66,10 +73,29 @@ let allForests = [];
 (async () => {
   const resp = await fetch('/search_index.json');
   const all  = await resp.json();
-  allForests = all.filter(f => f.doShort === DO_NAME);
+  allForests = all.filter(f => f.kind === 'forest' && f.doShort === DO_NAME);
   document.getElementById('campCount').textContent = `총 ${allForests.length}개 자연휴양림`;
   renderForests(allForests);
+
+  const healings = all.filter(f => f.kind === 'healing' && f.doShort === DO_NAME);
+  if (healings.length > 0) {
+    document.getElementById('healingSection').style.display = 'block';
+    document.getElementById('healingGrid').innerHTML = healings.map(healingCard).join('');
+  }
 })();
+
+function healingCard(f) {
+  return `<a class="camp-card" href="/healing/${f.slug}/">
+    <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0);">🌿</div>
+    <div class="camp-card-body">
+      <div class="camp-card-name">${f.healingNm}</div>
+      <div class="camp-card-loc">📍 ${f.sigungu || ''}</div>
+      <div class="camp-card-tags">
+        ${f.manageType ? `<span class="tag tag-type">${f.manageType}</span>` : ''}
+      </div>
+    </div>
+  </a>`;
+}
 
 function filterForests(type, btn) {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));

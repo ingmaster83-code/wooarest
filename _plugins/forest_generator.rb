@@ -7,18 +7,23 @@ module Jekyll
 
     def generate(site)
       forests = load_json(site, '_rawdata/forests.json')
-      return if forests.empty?
+      healings = load_json(site, '_rawdata/healing.json')
 
       Jekyll.logger.info "ForestGenerator:", "#{forests.size}개 휴양림 페이지 생성 중..."
-
       forests.each do |f|
         next if f['slug'].to_s.strip.empty?
         site.pages << ForestPage.new(site, f)
       end
 
-      site.pages << SearchIndexPage.new(site, forests)
+      Jekyll.logger.info "ForestGenerator:", "#{healings.size}개 치유의숲 페이지 생성 중..."
+      healings.each do |h|
+        next if h['slug'].to_s.strip.empty?
+        site.pages << HealingPage.new(site, h)
+      end
 
-      Jekyll.logger.info "ForestGenerator:", "완료 (#{forests.size}개)"
+      site.pages << SearchIndexPage.new(site, forests, healings)
+
+      Jekyll.logger.info "ForestGenerator:", "완료 (휴양림 #{forests.size}개 + 치유의숲 #{healings.size}개)"
     end
 
     private
@@ -64,8 +69,39 @@ module Jekyll
     end
   end
 
+  class HealingPage < Page
+    def initialize(site, h)
+      @site = site
+      @base = site.source
+      @dir  = "healing/#{h['slug']}"
+      @name = 'index.html'
+
+      self.process(@name)
+      self.read_yaml(File.join(@base, '_layouts'), 'healing.html')
+      self.data.merge!(h)
+      self.data['layout']      = 'healing'
+      self.data['title']       = build_title(h)
+      self.data['description'] = build_desc(h)
+    end
+
+    private
+
+    def build_title(h)
+      name = h['healingNm'] || ''
+      loc  = [h['doShort'], h['sigungu']].compact.join(' ')
+      "#{name} #{loc} 위치 프로그램 정보"
+    end
+
+    def build_desc(h)
+      name = h['healingNm'] || ''
+      loc  = [h['doShort'], h['sigungu']].compact.join(' ')
+      type = h['manageType'] || ''
+      "#{loc} #{name}(#{type}) 위치, 연락처, 참여방법을 확인하세요."[0, 155]
+    end
+  end
+
   class SearchIndexPage < Page
-    def initialize(site, forests)
+    def initialize(site, forests, healings)
       @site = site
       @base = site.source
       @dir  = ''
@@ -74,8 +110,9 @@ module Jekyll
       self.process(@name)
       self.data = { 'layout' => nil, 'sitemap' => false }
 
-      index = forests.map do |f|
+      forest_index = forests.map do |f|
         {
+          'kind'         => 'forest',
           'slug'         => f['slug'],
           'rcrfrstNm'    => f['rcrfrstNm'],
           'rcrfrstType'  => f['rcrfrstType'],
@@ -88,7 +125,21 @@ module Jekyll
         }
       end
 
-      self.content = index.to_json
+      healing_index = healings.map do |h|
+        {
+          'kind'        => 'healing',
+          'slug'        => h['slug'],
+          'healingNm'   => h['healingNm'],
+          'manageType'  => h['manageType'],
+          'doShort'     => h['doShort'],
+          'sigungu'     => h['sigungu'],
+          'address'     => h['address'],
+          'latitude'    => h['latitude'],
+          'longitude'   => h['longitude'],
+        }
+      end
+
+      self.content = (forest_index + healing_index).to_json
     end
 
     def output   = self.content
