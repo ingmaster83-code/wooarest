@@ -1,0 +1,105 @@
+---
+layout: default
+---
+
+<div class="page-with-sidebar">
+<div class="region-page">
+
+  <nav class="breadcrumb" aria-label="위치">
+    <a href="/">홈</a>
+    <span>›</span>
+    <span>{{ page.do_name }} 자연휴양림</span>
+  </nav>
+
+  <div class="region-page-header">
+    <h1>🌲 {{ page.title_h1 }}</h1>
+    <p>{{ page.subtitle }}</p>
+  </div>
+
+  <!-- 광고 -->
+  <div class="ad-slot">
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6464921081676309" data-ad-slot="7080296704" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- 필터 -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all" onclick="filterForests('all', this)">전체</button>
+    <button class="filter-btn" data-filter="국유림" onclick="filterForests('국유림', this)">국유림</button>
+    <button class="filter-btn" data-filter="공유림" onclick="filterForests('공유림', this)">공유림</button>
+    <button class="filter-btn" data-filter="사유림" onclick="filterForests('사유림', this)">사유림</button>
+    <button class="filter-btn" data-filter="stay" onclick="filterForests('stay', this)">🏠 숙박가능</button>
+  </div>
+
+  <p id="campCount" style="font-size:.87rem;color:#6B7280;margin-bottom:16px;"></p>
+
+  <div class="camp-grid" id="campGrid">
+    <p style="color:#6B7280;">로딩 중...</p>
+  </div>
+
+  <!-- 안내 텍스트 -->
+  <div style="margin-top:40px;background:#F9FAFB;border-radius:14px;padding:24px 28px;">
+    <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px;">{{ page.do_name }} 자연휴양림 이용 안내</h2>
+    <p style="color:#374151;line-height:1.8;font-size:.9375rem;margin-bottom:16px;">
+      {{ page.do_name }}의 자연휴양림을 국유림·공유림·사유림 유형별로 검색할 수 있습니다.
+      숙박이 가능한 휴양림과 당일 이용(산림욕)만 가능한 곳을 구분해서 확인하세요.
+      모든 정보는 산림청 전국휴양림표준데이터를 기반으로 제공되며, 예약은 숲나들e(foresttrip.go.kr) 또는 각 휴양림 홈페이지를 통해 할 수 있습니다.
+    </p>
+    <details style="margin-bottom:10px;">
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;">휴양림 예약은 어디서 하나요?</summary>
+      <p style="padding:6px 0 4px;color:#374151;line-height:1.7;">국립·공립 자연휴양림 대부분은 산림청 통합예약시스템 숲나들e(foresttrip.go.kr)에서 예약합니다. 사유림의 경우 개별 홈페이지나 전화로 예약해야 할 수 있습니다.</p>
+    </details>
+    <details>
+      <summary style="cursor:pointer;font-weight:600;padding:6px 0;">국유림·공유림·사유림은 어떻게 다른가요?</summary>
+      <p style="padding:6px 0 4px;color:#374151;line-height:1.7;">국유림은 산림청이, 공유림은 지자체가 직접 조성·운영하는 휴양림입니다. 사유림은 개인 또는 법인이 조성한 휴양림으로, 예약 방식과 요금 체계가 다를 수 있습니다.</p>
+    </details>
+  </div>
+
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<script>
+const DO_NAME = {{ page.do_name | jsonify }};
+let allForests = [];
+
+(async () => {
+  const resp = await fetch('/search_index.json');
+  const all  = await resp.json();
+  allForests = all.filter(f => f.doShort === DO_NAME);
+  document.getElementById('campCount').textContent = `총 ${allForests.length}개 자연휴양림`;
+  renderForests(allForests);
+})();
+
+function filterForests(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  let filtered = allForests;
+  if (type === 'stay') {
+    filtered = allForests.filter(f => f.stayngPosblYn === 'Y');
+  } else if (type !== 'all') {
+    filtered = allForests.filter(f => f.rcrfrstType === type);
+  }
+  document.getElementById('campCount').textContent = `총 ${filtered.length}개 자연휴양림`;
+  renderForests(filtered);
+}
+
+function renderForests(forests) {
+  const grid = document.getElementById('campGrid');
+  if (forests.length === 0) {
+    grid.innerHTML = '<p style="color:#6B7280;grid-column:1/-1;">해당 조건의 휴양림이 없습니다.</p>';
+    return;
+  }
+  grid.innerHTML = forests.map(f => `<a class="camp-card" href="/forest/${f.slug}/">
+      <div class="camp-card-img-placeholder">🌲</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.rcrfrstNm}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || ''}</div>
+        <div class="camp-card-tags">
+          ${f.rcrfrstType ? `<span class="tag tag-type">${f.rcrfrstType}</span>` : ''}
+          ${f.stayngPosblYn === 'Y' ? `<span class="tag tag-pet">🏠 숙박</span>` : ''}
+        </div>
+      </div>
+    </a>`).join('');
+}
+</script>

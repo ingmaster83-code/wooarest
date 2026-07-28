@@ -1,0 +1,170 @@
+---
+layout: default
+title: 우아휴양림 - 전국 자연휴양림 정보 검색
+description: 전국 자연휴양림 위치, 요금, 시설, 숙박 가능 여부를 한눈에. 산림청 공공데이터 기반 정보 제공.
+---
+
+<!-- 히어로 & 검색 -->
+<div class="hero">
+  <h1>🌲 전국 자연휴양림 정보</h1>
+  <p>휴양림명 또는 지역으로 검색하세요</p>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" class="search-input"
+           placeholder="예) 대관령, 국립, 강원도..."
+           autocomplete="off" aria-label="자연휴양림 검색">
+    <button class="search-btn" onclick="doSearch()">🔍 검색</button>
+  </div>
+</div>
+
+<div class="page-with-sidebar">
+<div>
+<!-- 검색 결과 -->
+<div id="search-results"></div>
+
+<!-- 광고 -->
+<div class="top-ad-bar">
+  <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6464921081676309" data-ad-slot="7080296704" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<!-- 지역별 찾기 -->
+<div class="section">
+  <h2 class="section-title">📍 지역별 자연휴양림 찾기</h2>
+  <div class="region-grid">
+    <a href="/region/경기/" class="region-btn"><span class="region-icon">🌾</span>경기<span class="region-count"></span></a>
+    <a href="/region/인천/" class="region-btn"><span class="region-icon">⚓</span>인천<span class="region-count"></span></a>
+    <a href="/region/강원/" class="region-btn"><span class="region-icon">🏔️</span>강원<span class="region-count"></span></a>
+    <a href="/region/충북/" class="region-btn"><span class="region-icon">🌲</span>충북<span class="region-count"></span></a>
+    <a href="/region/충남/" class="region-btn"><span class="region-icon">🌊</span>충남<span class="region-count"></span></a>
+    <a href="/region/대전/" class="region-btn"><span class="region-icon">🏛️</span>대전<span class="region-count"></span></a>
+    <a href="/region/전북/" class="region-btn"><span class="region-icon">🌾</span>전북<span class="region-count"></span></a>
+    <a href="/region/전남/" class="region-btn"><span class="region-icon">🐚</span>전남<span class="region-count"></span></a>
+    <a href="/region/경북/" class="region-btn"><span class="region-icon">🍎</span>경북<span class="region-count"></span></a>
+    <a href="/region/경남/" class="region-btn"><span class="region-icon">🎋</span>경남<span class="region-count"></span></a>
+    <a href="/region/대구/" class="region-btn"><span class="region-icon">🍑</span>대구<span class="region-count"></span></a>
+    <a href="/region/울산/" class="region-btn"><span class="region-icon">🏭</span>울산<span class="region-count"></span></a>
+    <a href="/region/제주/" class="region-btn"><span class="region-icon">🌺</span>제주<span class="region-count"></span></a>
+  </div>
+</div>
+
+<!-- 유형별 찾기 -->
+<div style="background:white;">
+<div class="section" style="padding-top:40px;padding-bottom:40px;">
+    <h2 class="section-title">🌲 유형별 자연휴양림</h2>
+    <div class="type-grid" style="grid-template-columns:repeat(3,1fr);">
+      <a href="/search/?q=국유림" class="type-card">
+        <span class="type-icon">🏞️</span>
+        <div class="type-name">국유림</div>
+        <div class="type-count" id="cnt-국유림"></div>
+      </a>
+      <a href="/search/?q=공유림" class="type-card">
+        <span class="type-icon">🌳</span>
+        <div class="type-name">공유림</div>
+        <div class="type-count" id="cnt-공유림"></div>
+      </a>
+      <a href="/search/?q=사유림" class="type-card">
+        <span class="type-icon">🌴</span>
+        <div class="type-name">사유림</div>
+        <div class="type-count" id="cnt-사유림"></div>
+      </a>
+    </div>
+</div>
+</div>
+
+<!-- 숙박 가능 휴양림 -->
+<div class="section">
+  <h2 class="section-title">🏠 숙박 가능한 휴양림</h2>
+  <div class="camp-grid" id="stayForests">
+    <p style="color:#6B7280;">로딩 중...</p>
+  </div>
+</div>
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<!-- Fuse.js 검색 -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script>
+let fuseIndex = null;
+let fuse = null;
+
+async function loadIndex() {
+  if (fuseIndex) return;
+  const resp = await fetch('/search_index.json');
+  fuseIndex = await resp.json();
+  fuse = new Fuse(fuseIndex, {
+    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType'],
+    threshold: 0.35,
+    minMatchCharLength: 1,
+  });
+  updateCounts();
+  renderStay();
+}
+
+function updateCounts() {
+  if (!fuseIndex) return;
+  const types = ['국유림', '공유림', '사유림'];
+  types.forEach(t => {
+    const cnt = fuseIndex.filter(f => f.rcrfrstType === t).length;
+    const el = document.getElementById('cnt-' + t);
+    if (el) el.textContent = cnt + '개';
+  });
+}
+
+function renderStay() {
+  if (!fuseIndex) return;
+  const stay = fuseIndex.filter(f => f.stayngPosblYn === 'Y').slice(0, 12);
+  document.getElementById('stayForests').innerHTML = stay.map(forestCard).join('');
+}
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) { document.getElementById('search-results').innerHTML = ''; return; }
+  loadIndex().then(() => {
+    const results = fuse ? fuse.search(q).slice(0, 20) : [];
+    const el = document.getElementById('search-results');
+    if (results.length === 0) {
+      el.innerHTML = '<p style="text-align:center;padding:20px;color:#6B7280;">검색 결과가 없습니다.</p>';
+      return;
+    }
+    el.innerHTML = `<div style="max-width:960px;margin:0 auto;padding:0 20px;">
+      <p style="padding:8px 0;font-size:.9rem;color:#6B7280;">"${q}" 검색 결과 ${results.length}개</p>
+      ${results.map(r => searchResultItem(r.item)).join('')}
+    </div>`;
+    el.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+function forestCard(f) {
+  return `<a class="camp-card" href="/forest/${f.slug}/">
+    <div class="camp-card-img-placeholder">🌲</div>
+    <div class="camp-card-body">
+      <div class="camp-card-name">${f.rcrfrstNm}</div>
+      <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+      <div class="camp-card-tags">
+        ${f.rcrfrstType ? `<span class="tag tag-type">${f.rcrfrstType}</span>` : ''}
+        ${f.stayngPosblYn === 'Y' ? `<span class="tag tag-pet">🏠 숙박</span>` : ''}
+      </div>
+    </div>
+  </a>`;
+}
+
+function searchResultItem(f) {
+  return `<div class="search-result-item">
+    <a href="/forest/${f.slug}/">
+      <div class="search-result-thumb" style="background:#d1fae5;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:6px;">🌲</div>
+      <div>
+        <div class="search-result-name">${f.rcrfrstNm}</div>
+        <div class="search-result-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+        ${f.rcrfrstType ? `<span class="search-result-tag">${f.rcrfrstType}</span>` : ''}
+      </div>
+    </a>
+  </div>`;
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+loadIndex();
+</script>

@@ -1,0 +1,30 @@
+title: 우아휴양림 - 전국 자연휴양림 정보
+description: >-
+  전국 국립·공립·사립 자연휴양림 위치, 요금, 시설 정보를 한눈에.
+  산림청 공공데이터 기반 신뢰할 수 있는 자연휴양림 정보.
+url: "https://wooarest.wooahouse.com"
+baseurl: ""
+lang: ko
+timezone: Asia/Seoul
+author: WooaHouse
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - scripts/
+  - "*.py"
+  - "*.log"
+  - "*.txt"
+  - README.md
+  - .gitignore
+  - vendor/
+  - _rawdata/

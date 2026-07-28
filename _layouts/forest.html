@@ -1,0 +1,180 @@
+---
+layout: default
+---
+
+<div class="page-with-sidebar">
+<div class="camp-page">
+
+  <!-- 브레드크럼 -->
+  <nav class="breadcrumb" aria-label="위치">
+    <a href="/">홈</a>
+    <span>›</span>
+    <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }}</a>
+    <span>›</span>
+    <span>{{ page.rcrfrstNm }}</span>
+  </nav>
+
+  <div class="gallery" id="gallery">
+    <div class="gallery-placeholder">🌲</div>
+  </div>
+
+  <!-- 헤더 -->
+  <div class="camp-header">
+    <div class="camp-tags">
+      {% if page.rcrfrstType and page.rcrfrstType != "" %}
+      <span class="tag tag-type">{{ page.rcrfrstType }}</span>
+      {% endif %}
+      {% if page.stayngPosblYn == "Y" %}
+      <span class="tag tag-env">🏠 숙박 가능</span>
+      {% else %}
+      <span class="tag tag-env">🚶 당일 이용</span>
+      {% endif %}
+    </div>
+    <h1 class="camp-title">{{ page.rcrfrstNm }}</h1>
+    {% if page.rdnmadr and page.rdnmadr != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📍</span>
+      <span>{{ page.rdnmadr }}</span>
+    </div>
+    {% endif %}
+    {% if page.telephoneNumber and page.telephoneNumber != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📞</span>
+      <a href="tel:{{ page.telephoneNumber }}">{{ page.telephoneNumber }}</a>
+    </div>
+    {% endif %}
+    {% if page.institutionNm and page.institutionNm != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">🏛️</span>
+      <span>관리기관: {{ page.institutionNm }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 주요시설 -->
+  {% if page.mainFcltyNm and page.mainFcltyNm != "" %}
+  <div class="camp-section">
+    <h2>🏕️ 주요 시설</h2>
+    <div class="facility-grid">
+      {% assign facilities = page.mainFcltyNm | split: "+" %}
+      {% for f in facilities %}
+      {% assign fname = f | strip %}
+      {% if fname != "" %}
+      <span class="facility-badge">✓ {{ fname }}</span>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 광고 -->
+  <div class="ad-slot">
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6464921081676309" data-ad-slot="7080296704" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- 이용 정보 -->
+  <div class="camp-section">
+    <h2>이용 정보</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
+      {% if page.rcrfrstAr and page.rcrfrstAr != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;width:110px;">면적</td><td>{{ page.rcrfrstAr | plus: 0 | divided_by: 10000.0 | round: 1 }}ha ({{ page.rcrfrstAr }}㎡)</td></tr>
+      {% endif %}
+      {% if page.aceptncCo and page.aceptncCo != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;">수용인원</td><td>{{ page.aceptncCo }}명</td></tr>
+      {% endif %}
+      <tr><td style="padding:8px 0;color:#6B7280;">숙박 가능 여부</td><td>{% if page.stayngPosblYn == "Y" %}가능{% else %}불가(당일 이용만){% endif %}</td></tr>
+      {% if page.referenceDate and page.referenceDate != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;">데이터 기준일</td><td>{{ page.referenceDate }}</td></tr>
+      {% endif %}
+    </table>
+  </div>
+
+  <!-- 이용요금 -->
+  {% if page.admfee and page.admfee != "" %}
+  <div class="camp-section">
+    <h2>💰 이용 요금</h2>
+    <p style="white-space:pre-line;line-height:1.8;">{{ page.admfee | replace: "+", "
+" }}</p>
+    <p style="font-size:.82rem;color:#9CA3AF;margin-top:8px;">※ 요금은 변경될 수 있으니 예약 전 반드시 확인하세요.</p>
+  </div>
+  {% endif %}
+
+  <!-- 예약/홈페이지 버튼 -->
+  <div class="camp-section">
+    <a href="https://www.foresttrip.go.kr/main.do?hmpgId=FRIP" target="_blank" rel="noopener" class="reserve-btn">
+      🗓️ 숲나들e에서 예약하기
+    </a>
+    {% if page.homepageUrl and page.homepageUrl != "" %}
+    <a href="{{ page.homepageUrl }}" target="_blank" rel="noopener" class="reserve-btn secondary" style="margin-top:10px;">
+      🌐 공식 홈페이지
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- 같은 지역 휴양림 -->
+  <div class="region-camps">
+    <h2>📍 {{ page.doShort }} 다른 휴양림</h2>
+    <div id="regionCampsGrid" class="camp-grid"></div>
+    <p style="margin-top:16px;">
+      <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }} 휴양림 전체 보기 →</a>
+    </p>
+  </div>
+
+  <!-- Schema.org LocalBusiness -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "{{ page.rcrfrstNm | escape }}",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{{ page.rdnmadr | escape }}",
+      "addressCountry": "KR"
+    }{% if page.telephoneNumber and page.telephoneNumber != "" %},
+    "telephone": "{{ page.telephoneNumber | escape }}"{% endif %}{% if page.latitude and page.latitude != "" %},
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": {{ page.latitude }},
+      "longitude": {{ page.longitude }}
+    }{% endif %}{% if page.homepageUrl and page.homepageUrl != "" %},
+    "url": "{{ page.homepageUrl | escape }}"{% endif %}
+  }
+  </script>
+
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<script>
+(async () => {
+  const currentSlug = {{ page.slug | jsonify }};
+  const currentRegion = {{ page.doShort | jsonify }};
+  const currentSigungu = {{ page.sigungu | jsonify }};
+
+  try {
+    const resp = await fetch('/search_index.json');
+    const all = await resp.json();
+
+    const regionForests = all
+      .filter(f => f.doShort === currentRegion && f.slug !== currentSlug)
+      .sort((a,b) => (a.sigungu === currentSigungu ? -1 : 1))
+      .slice(0, 6);
+
+    if (regionForests.length > 0) {
+      document.getElementById('regionCampsGrid').innerHTML = regionForests.map(forestCard).join('');
+    }
+  } catch(e) {}
+
+  function forestCard(f) {
+    return `<a class="camp-card" href="/forest/${f.slug}/">
+      <div class="camp-card-img-placeholder">🌲</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.rcrfrstNm}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags"><span class="tag tag-type">${f.rcrfrstType || ''}</span></div>
+      </div>
+    </a>`;
+  }
+})();
+</script>
