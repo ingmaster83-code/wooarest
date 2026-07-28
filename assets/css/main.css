@@ -224,7 +224,7 @@ img { max-width: 100%; height: auto; }
 .tag-safe { background: #d1fae5; color: #065f46; }
 
 /* ===== 상세 페이지 ===== */
-.camp-page { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+.camp-page { width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
 
 /* 이미지 갤러리 */
 .gallery {
@@ -294,7 +294,7 @@ img { max-width: 100%; height: auto; }
 .region-camps-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 
 /* ===== 지역 페이지 ===== */
-.region-page { max-width: 960px; margin: 0 auto; padding: 0 20px 60px; }
+.region-page { width: 100%; max-width: 960px; margin: 0 auto; padding: 0 20px 60px; }
 .region-page-header { padding: 32px 0 24px; }
 .region-page-header h1 { font-size: 1.6rem; font-weight: 800; }
 .region-page-header p { color: var(--text-muted); margin-top: 6px; }
