@@ -6,6 +6,8 @@ from collections import Counter
 
 ROOT = Path(__file__).parent.parent
 DATA = json.loads((ROOT / "_rawdata" / "forests.json").read_text(encoding="utf-8"))
+HEALING = json.loads((ROOT / "_rawdata" / "healing.json").read_text(encoding="utf-8"))
+ARBORETUM = json.loads((ROOT / "_rawdata" / "arboretum.json").read_text(encoding="utf-8"))
 
 ICONS = {
     "서울": "🏙️", "경기": "🌾", "인천": "⚓", "강원": "🏔️", "충북": "🌲",
@@ -22,23 +24,43 @@ FULLNAME = {
     "제주": "제주특별자치도",
 }
 
-counts = Counter(f["doShort"] for f in DATA)
+forest_counts = Counter(f["doShort"] for f in DATA)
+healing_counts = Counter(h["doShort"] for h in HEALING)
+arboretum_counts = Counter(a["doShort"] for a in ARBORETUM)
+all_regions = set(forest_counts) | set(healing_counts) | set(arboretum_counts)
 
-for region, cnt in counts.items():
+for region in sorted(all_regions):
     full = FULLNAME.get(region, region)
     icon = ICONS.get(region, "🌲")
+    f_cnt = forest_counts.get(region, 0)
+    h_cnt = healing_counts.get(region, 0)
+    a_cnt = arboretum_counts.get(region, 0)
     d = ROOT / "region" / region
     d.mkdir(parents=True, exist_ok=True)
+
+    if f_cnt > 0:
+        page_title = f"{full} 자연휴양림"
+        title_h1 = f"{full} 자연휴양림 {f_cnt}개"
+        subtitle = f"{full} 지역 자연휴양림을 유형별, 숙박가능여부별로 검색하세요."
+    elif a_cnt > 0:
+        page_title = f"{full} 수목원·식물원"
+        title_h1 = f"{full} 수목원·식물원 {a_cnt}개"
+        subtitle = f"{full} 지역 수목원·식물원·치유의숲 정보를 확인하세요."
+    else:
+        page_title = f"{full} 치유의숲"
+        title_h1 = f"{full} 치유의숲 {h_cnt}개"
+        subtitle = f"{full} 지역 치유의숲 정보를 확인하세요."
+
     content = f"""---
 layout: region
-title: {full} 자연휴양림
-description: {full} 자연휴양림 {cnt}개 정보. 위치, 이용요금, 시설, 숙박 가능 여부를 확인하세요.
+title: {page_title}
+description: {full} 자연휴양림·수목원·치유의숲 정보. 위치, 이용요금, 시설, 숙박 가능 여부를 확인하세요.
 do_name: {region}
-title_h1: {full} 자연휴양림 {cnt}개
-subtitle: {full} 지역 자연휴양림을 유형별, 숙박가능여부별로 검색하세요.
+title_h1: {title_h1}
+subtitle: {subtitle}
 ---
 """
     (d / "index.html").write_text(content, encoding="utf-8")
-    print(f"  {region} ({full}): {cnt}개")
+    print(f"  {region} ({full}): 휴양림 {f_cnt} / 치유의숲 {h_cnt} / 수목원 {a_cnt}")
 
-print(f"\n완료: {len(counts)}개 지역 페이지 생성")
+print(f"\n완료: {len(all_regions)}개 지역 페이지 생성")

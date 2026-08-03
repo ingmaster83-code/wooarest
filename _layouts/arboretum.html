@@ -1,0 +1,171 @@
+---
+layout: default
+---
+
+<div class="page-with-sidebar">
+<div class="camp-page">
+
+  <!-- 브레드크럼 -->
+  <nav class="breadcrumb" aria-label="위치">
+    <a href="/">홈</a>
+    <span>›</span>
+    <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }}</a>
+    <span>›</span>
+    <span>{{ page.arbName }}</span>
+  </nav>
+
+  <div class="gallery" id="gallery">
+    {% if page.image and page.image != "" %}
+    <img class="gallery-main" src="{{ page.image }}" alt="{{ page.arbName }}" loading="eager">
+    {% else %}
+    <div class="gallery-placeholder">🌳</div>
+    {% endif %}
+  </div>
+
+  <!-- 헤더 -->
+  <div class="camp-header">
+    <div class="camp-tags">
+      <span class="tag tag-env">🌳 수목원·식물원</span>
+    </div>
+    <h1 class="camp-title">{{ page.arbName }}</h1>
+    {% if page.address and page.address != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📍</span>
+      <span>{{ page.address }}</span>
+    </div>
+    {% endif %}
+    {% if page.phone and page.phone != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📞</span>
+      <span style="white-space:pre-line">{{ page.phone }}</span>
+    </div>
+    {% endif %}
+    {% if page.lat and page.lat != "" or page.latitude and page.latitude != "" %}
+    <div class="camp-info-row">
+      <a href="https://map.kakao.com/link/map/{{ page.arbName | url_encode }},{{ page.latitude }},{{ page.longitude }}" target="_blank" rel="noopener" class="parking-btn">🗺️ 카카오맵으로 위치 보기</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 광고 (상단) -->
+  <div class="ad-slot">
+    <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6464921081676309" data-ad-slot="7080296704" data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- 소개 -->
+  {% if page.overview and page.overview != "" %}
+  <div class="camp-section">
+    <h2>🌳 소개</h2>
+    <p style="line-height:1.8;white-space:pre-line;">{{ page.overview }}</p>
+  </div>
+  {% endif %}
+
+  <!-- 이용 정보 -->
+  <div class="camp-section">
+    <h2>이용 정보</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
+      {% if page.usetime and page.usetime != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;width:110px;vertical-align:top;">이용시간</td><td style="white-space:pre-line;">{{ page.usetime }}</td></tr>
+      {% endif %}
+      {% if page.restdate and page.restdate != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;vertical-align:top;">휴무일</td><td style="white-space:pre-line;">{{ page.restdate }}</td></tr>
+      {% endif %}
+      {% if page.parking and page.parking != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;">주차</td><td>{{ page.parking }}</td></tr>
+      {% endif %}
+    </table>
+  </div>
+
+  {% if page.expguide and page.expguide != "" %}
+  <div class="camp-section">
+    <h2>💡 이용 안내</h2>
+    <p style="line-height:1.8;">{{ page.expguide }}</p>
+  </div>
+  {% endif %}
+
+  <!-- 같은 지역 -->
+  <div class="region-camps">
+    <h2>📍 {{ page.doShort }} 다른 수목원·휴양림</h2>
+    <div id="regionCampsGrid" class="camp-grid"></div>
+    <p style="margin-top:16px;">
+      <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }} 자연휴양림 전체 보기 →</a>
+    </p>
+  </div>
+
+  <!-- Schema.org LocalBusiness -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "{{ page.arbName | escape }}",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{{ page.address | escape }}",
+      "addressCountry": "KR"
+    }{% if page.latitude and page.latitude != "" %},
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": {{ page.latitude }},
+      "longitude": {{ page.longitude }}
+    }{% endif %}{% if page.image and page.image != "" %},
+    "image": "{{ page.image }}"{% endif %}
+  }
+  </script>
+
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<script>
+(async () => {
+  const currentSlug = {{ page.slug | jsonify }};
+  const currentRegion = {{ page.doShort | jsonify }};
+  const currentSigungu = {{ page.sigungu | jsonify }};
+
+  try {
+    const resp = await fetch('/search_index.json');
+    const all = await resp.json();
+
+    const nearby = all
+      .filter(f => f.doShort === currentRegion && f.slug !== currentSlug)
+      .sort((a,b) => (a.sigungu === currentSigungu ? -1 : 1))
+      .slice(0, 6);
+
+    if (nearby.length > 0) {
+      document.getElementById('regionCampsGrid').innerHTML = nearby.map(itemCard).join('');
+    }
+  } catch(e) {}
+
+  function itemCard(f) {
+    if (f.kind === 'arboretum') {
+      return `<a class="camp-card" href="/arboretum/${f.slug}/">
+        ${f.image ? `<img class="camp-card-img" src="${f.image}" alt="${f.arbName}" loading="lazy">` : `<div class="camp-card-img-placeholder">🌳</div>`}
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.arbName}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🌳 수목원</span></div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'healing') {
+      return `<a class="camp-card" href="/healing/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0);">🌿</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.healingNm}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🌿 치유의숲</span></div>
+        </div>
+      </a>`;
+    }
+    return `<a class="camp-card" href="/forest/${f.slug}/">
+      <div class="camp-card-img-placeholder">🌲</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.rcrfrstNm}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags"><span class="tag tag-type">${f.rcrfrstType || ''}</span></div>
+      </div>
+    </a>`;
+  }
+})();
+</script>

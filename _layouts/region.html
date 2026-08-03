@@ -8,7 +8,7 @@ layout: default
   <nav class="breadcrumb" aria-label="위치">
     <a href="/">홈</a>
     <span>›</span>
-    <span>{{ page.do_name }} 자연휴양림</span>
+    <span>{{ page.do_name }}</span>
   </nav>
 
   <div class="region-page-header">
@@ -42,6 +42,21 @@ layout: default
     <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🌿 {{ page.do_name }} 치유의숲</h2>
     <p style="color:#6B7280;font-size:.88rem;margin-bottom:16px;">숙박이 아닌 당일 산림치유 프로그램을 운영하는 곳입니다.</p>
     <div class="camp-grid" id="healingGrid"></div>
+  </div>
+
+  <!-- 광고 -->
+  <div id="arboretumAd" style="display:none;margin-top:48px;">
+    <div class="ad-slot">
+      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6464921081676309" data-ad-slot="7080296704" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+  </div>
+
+  <!-- 이 지역 수목원·식물원 -->
+  <div id="arboretumSection" style="display:none;margin-top:32px;">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🌳 {{ page.do_name }} 수목원·식물원</h2>
+    <p style="color:#6B7280;font-size:.88rem;margin-bottom:16px;">산책하며 다양한 식물·정원을 둘러볼 수 있는 곳입니다.</p>
+    <div class="camp-grid" id="arboretumGrid"></div>
   </div>
 
   <!-- 안내 텍스트 -->
@@ -82,6 +97,13 @@ let allForests = [];
     document.getElementById('healingSection').style.display = 'block';
     document.getElementById('healingGrid').innerHTML = healings.map(healingCard).join('');
   }
+
+  const arboretums = all.filter(f => f.kind === 'arboretum' && f.doShort === DO_NAME);
+  if (arboretums.length > 0) {
+    document.getElementById('arboretumAd').style.display = 'block';
+    document.getElementById('arboretumSection').style.display = 'block';
+    document.getElementById('arboretumGrid').innerHTML = arboretums.map(arboretumCard).join('');
+  }
 })();
 
 function healingCard(f) {
@@ -93,6 +115,17 @@ function healingCard(f) {
       <div class="camp-card-tags">
         ${f.manageType ? `<span class="tag tag-type">${f.manageType}</span>` : ''}
       </div>
+    </div>
+  </a>`;
+}
+
+function arboretumCard(f) {
+  return `<a class="camp-card" href="/arboretum/${f.slug}/">
+    ${f.image ? `<img class="camp-card-img" src="${f.image}" alt="${f.arbName}" loading="lazy">` : `<div class="camp-card-img-placeholder">🌳</div>`}
+    <div class="camp-card-body">
+      <div class="camp-card-name">${f.arbName}</div>
+      <div class="camp-card-loc">📍 ${f.sigungu || ''}</div>
+      <div class="camp-card-tags"><span class="tag tag-env">🌳 수목원</span></div>
     </div>
   </a>`;
 }

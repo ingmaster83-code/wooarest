@@ -8,6 +8,7 @@ module Jekyll
     def generate(site)
       forests = load_json(site, '_rawdata/forests.json')
       healings = load_json(site, '_rawdata/healing.json')
+      arboretums = load_json(site, '_rawdata/arboretum.json')
 
       Jekyll.logger.info "ForestGenerator:", "#{forests.size}개 휴양림 페이지 생성 중..."
       forests.each do |f|
@@ -21,9 +22,15 @@ module Jekyll
         site.pages << HealingPage.new(site, h)
       end
 
-      site.pages << SearchIndexPage.new(site, forests, healings)
+      Jekyll.logger.info "ForestGenerator:", "#{arboretums.size}개 수목원 페이지 생성 중..."
+      arboretums.each do |a|
+        next if a['slug'].to_s.strip.empty?
+        site.pages << ArboretumPage.new(site, a)
+      end
 
-      Jekyll.logger.info "ForestGenerator:", "완료 (휴양림 #{forests.size}개 + 치유의숲 #{healings.size}개)"
+      site.pages << SearchIndexPage.new(site, forests, healings, arboretums)
+
+      Jekyll.logger.info "ForestGenerator:", "완료 (휴양림 #{forests.size}개 + 치유의숲 #{healings.size}개 + 수목원 #{arboretums.size}개)"
     end
 
     private
@@ -100,8 +107,38 @@ module Jekyll
     end
   end
 
+  class ArboretumPage < Page
+    def initialize(site, a)
+      @site = site
+      @base = site.source
+      @dir  = "arboretum/#{a['slug']}"
+      @name = 'index.html'
+
+      self.process(@name)
+      self.read_yaml(File.join(@base, '_layouts'), 'arboretum.html')
+      self.data.merge!(a)
+      self.data['layout']      = 'arboretum'
+      self.data['title']       = build_title(a)
+      self.data['description'] = build_desc(a)
+    end
+
+    private
+
+    def build_title(a)
+      name = a['arbName'] || ''
+      loc  = [a['doShort'], a['sigungu']].compact.join(' ')
+      "#{name} #{loc} 위치 이용시간 정보"
+    end
+
+    def build_desc(a)
+      name = a['arbName'] || ''
+      loc  = [a['doShort'], a['sigungu']].compact.join(' ')
+      "#{loc} #{name} 위치, 이용시간, 주차, 휴무일을 확인하세요."[0, 155]
+    end
+  end
+
   class SearchIndexPage < Page
-    def initialize(site, forests, healings)
+    def initialize(site, forests, healings, arboretums = [])
       @site = site
       @base = site.source
       @dir  = ''
@@ -139,7 +176,21 @@ module Jekyll
         }
       end
 
-      self.content = (forest_index + healing_index).to_json
+      arboretum_index = arboretums.map do |a|
+        {
+          'kind'      => 'arboretum',
+          'slug'      => a['slug'],
+          'arbName'   => a['arbName'],
+          'doShort'   => a['doShort'],
+          'sigungu'   => a['sigungu'],
+          'address'   => a['address'],
+          'image'     => a['image'],
+          'latitude'  => a['latitude'],
+          'longitude' => a['longitude'],
+        }
+      end
+
+      self.content = (forest_index + healing_index + arboretum_index).to_json
     end
 
     def output   = self.content
