@@ -127,6 +127,31 @@ layout: default
     </p>
   </div>
 
+  <!-- 최근 본 자연명소 -->
+  <div class="nearby-section" id="recentSection" style="display:none">
+    <h2>🕑 최근 본 자연명소</h2>
+    <div class="camp-grid" id="recentGrid"></div>
+  </div>
+
+  <!-- 이전/다음 휴양림 -->
+  <div class="camp-prevnext" id="prevnextSection" style="display:none">
+    <a href="#" class="prevnext-btn prevnext-prev" id="prevBtn">
+      <span class="prevnext-label">◀ 이전 휴양림</span>
+      <span class="prevnext-name" id="prevName"></span>
+    </a>
+    <a href="#" class="prevnext-btn prevnext-next" id="nextBtn">
+      <span class="prevnext-label">다음 휴양림 ▶</span>
+      <span class="prevnext-name" id="nextName"></span>
+    </a>
+  </div>
+
+  <!-- 우아동네 교차링크 -->
+  <div class="crosslink-box">
+    <a href="https://wooatown.wooahouse.com/지역/{{ page.doShort | uri_escape }}.html" target="_blank" rel="noopener" class="crosslink-link">
+      🏠 {{ page.doShort }} 다른 생활정보 보기 (우아동네) →
+    </a>
+  </div>
+
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
   {
@@ -170,9 +195,81 @@ layout: default
     if (regionForests.length > 0) {
       document.getElementById('regionCampsGrid').innerHTML = regionForests.map(forestCard).join('');
     }
+
+    // 이전/다음 휴양림 (같은 지역 내 이름순 정렬 후 순환)
+    const regionOrdered = all
+      .filter(f => f.kind === 'forest' && f.doShort === currentRegion)
+      .sort((a, b) => (a.rcrfrstNm || '').localeCompare(b.rcrfrstNm || '', 'ko'));
+    const curIdx = regionOrdered.findIndex(f => f.slug === currentSlug);
+    if (curIdx !== -1 && regionOrdered.length > 1) {
+      const prevF = regionOrdered[(curIdx - 1 + regionOrdered.length) % regionOrdered.length];
+      const nextF = regionOrdered[(curIdx + 1) % regionOrdered.length];
+      document.getElementById('prevBtn').href = `/forest/${prevF.slug}/`;
+      document.getElementById('prevName').textContent = prevF.rcrfrstNm;
+      document.getElementById('nextBtn').href = `/forest/${nextF.slug}/`;
+      document.getElementById('nextName').textContent = nextF.rcrfrstNm;
+      document.getElementById('prevnextSection').style.display = 'grid';
+    }
   } catch(e) {}
 
   function forestCard(f) {
+    return `<a class="camp-card" href="/forest/${f.slug}/">
+      <div class="camp-card-img-placeholder">🌲</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.rcrfrstNm}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags"><span class="tag tag-type">${f.rcrfrstType || ''}</span></div>
+      </div>
+    </a>`;
+  }
+})();
+</script>
+
+<script>
+// 최근 본 자연명소 (localStorage, 휴양림/치유의숲/수목원 통합)
+(() => {
+  const KEY = 'wooarest_recent';
+  const current = {
+    kind: 'forest',
+    slug: {{ page.slug | jsonify }},
+    rcrfrstNm: {{ page.rcrfrstNm | jsonify }},
+    rcrfrstType: {{ page.rcrfrstType | jsonify }},
+    sigungu: {{ page.sigungu | jsonify }},
+    doShort: {{ page.doShort | jsonify }}
+  };
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+
+  const others = list.filter(i => !(i.kind === current.kind && i.slug === current.slug));
+  if (others.length > 0) {
+    document.getElementById('recentGrid').innerHTML = others.slice(0, 6).map(recentCard).join('');
+    document.getElementById('recentSection').style.display = 'block';
+  }
+
+  const updated = [current, ...others].slice(0, 10);
+  try { localStorage.setItem(KEY, JSON.stringify(updated)); } catch (e) {}
+
+  function recentCard(f) {
+    if (f.kind === 'healing') {
+      return `<a class="camp-card" href="/healing/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0);">🌿</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.healingNm}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🌿 치유의숲</span></div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'arboretum') {
+      return `<a class="camp-card" href="/arboretum/${f.slug}/">
+        <div class="camp-card-img-placeholder">🌳</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.arbName}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🌳 수목원</span></div>
+        </div>
+      </a>`;
+    }
     return `<a class="camp-card" href="/forest/${f.slug}/">
       <div class="camp-card-img-placeholder">🌲</div>
       <div class="camp-card-body">
