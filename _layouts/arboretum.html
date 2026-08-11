@@ -42,7 +42,7 @@ layout: default
     {% endif %}
     {% if page.lat and page.lat != "" or page.latitude and page.latitude != "" %}
     <div class="camp-info-row">
-      <a href="https://map.kakao.com/link/map/{{ page.arbName | url_encode }},{{ page.latitude }},{{ page.longitude }}" target="_blank" rel="noopener" class="parking-btn">🗺️ 카카오맵으로 위치 보기</a>
+      <a href="https://map.kakao.com/link/map/{{ page.arbName | url_encode }},{{ page.latitude }},{{ page.longitude }}" class="parking-btn">🗺️ 카카오맵으로 위치 보기</a>
     </div>
     {% endif %}
   </div>
