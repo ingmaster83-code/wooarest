@@ -430,3 +430,8 @@ img { max-width: 100%; height: auto; }
   .page-with-sidebar { grid-template-columns: 1fr; }
   .tool-sidebar { display: none; }
 }
+
+.ad-placeholder {
+  background: #F1F5F9; border: 1px dashed #CBD5E1; border-radius: 6px;
+  color: #94A3B8; font-size: .82rem; padding: 14px; text-align: center;
+}
