@@ -11,23 +11,19 @@ layout: default
     <span>›</span>
     <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }}</a>
     <span>›</span>
-    <span>{{ page.arbName }}</span>
+    <span>{{ page.kfName }}</span>
   </nav>
 
   <div class="gallery" id="gallery">
-    {% if page.image and page.image != "" %}
-    <img class="gallery-main" src="{{ page.image }}" alt="{{ page.arbName }}" loading="eager">
-    {% else %}
-    <div class="gallery-placeholder">🌳</div>
-    {% endif %}
+    <div class="gallery-placeholder">🧒</div>
   </div>
 
   <!-- 헤더 -->
   <div class="camp-header">
     <div class="camp-tags">
-      <span class="tag tag-env">🌳 수목원·식물원</span>
+      <span class="tag tag-env">🧒 유아숲체험원</span>
     </div>
-    <h1 class="camp-title">{{ page.arbName }}</h1>
+    <h1 class="camp-title">{{ page.kfName }}</h1>
     {% if page.address and page.address != "" %}
     <div class="camp-info-row">
       <span class="camp-info-icon">📍</span>
@@ -40,9 +36,13 @@ layout: default
       <span style="white-space:pre-line">{{ page.phone }}</span>
     </div>
     {% endif %}
-    {% if page.lat and page.lat != "" or page.latitude and page.latitude != "" %}
+    {% if page.latitude and page.latitude != "" %}
     <div class="camp-info-row">
-      <a href="https://map.kakao.com/link/map/{{ page.arbName | url_encode }},{{ page.latitude }},{{ page.longitude }}" class="parking-btn">🗺️ 카카오맵으로 위치 보기</a>
+      <a href="https://map.kakao.com/link/map/{{ page.kfName | url_encode }},{{ page.latitude }},{{ page.longitude }}" class="parking-btn">🗺️ 카카오맵으로 위치 보기</a>
+    </div>
+    {% else %}
+    <div class="camp-info-row">
+      <a href="https://map.kakao.com/?q={{ page.address | uri_escape }}" class="parking-btn">🗺️ 카카오맵에서 주소 검색</a>
     </div>
     {% endif %}
   </div>
@@ -52,40 +52,25 @@ layout: default
     {% include ad.html %}
   </div>
 
-  <!-- 소개 -->
-  {% if page.overview and page.overview != "" %}
-  <div class="camp-section">
-    <h2>🌳 소개</h2>
-    <p style="line-height:1.8;white-space:pre-line;">{{ page.overview }}</p>
-  </div>
-  {% endif %}
-
   <!-- 이용 정보 -->
   <div class="camp-section">
-    <h2>이용 정보</h2>
+    <h2>🧒 이용 정보</h2>
     <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
-      {% if page.usetime and page.usetime != "" %}
-      <tr><td style="padding:8px 0;color:#6B7280;width:110px;vertical-align:top;">이용시간</td><td style="white-space:pre-line;">{{ page.usetime }}</td></tr>
+      {% if page.operPeriod and page.operPeriod != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;width:110px;vertical-align:top;">운영기간</td><td style="white-space:pre-line;">{{ page.operPeriod }}</td></tr>
       {% endif %}
-      {% if page.restdate and page.restdate != "" %}
-      <tr><td style="padding:8px 0;color:#6B7280;vertical-align:top;">휴무일</td><td style="white-space:pre-line;">{{ page.restdate }}</td></tr>
-      {% endif %}
-      {% if page.parking and page.parking != "" %}
-      <tr><td style="padding:8px 0;color:#6B7280;">주차</td><td>{{ page.parking }}</td></tr>
+      {% if page.participWay and page.participWay != "" %}
+      <tr><td style="padding:8px 0;color:#6B7280;vertical-align:top;">참여방법</td><td style="white-space:pre-line;">{{ page.participWay }}</td></tr>
       {% endif %}
     </table>
+    <p style="font-size:.82rem;color:#7C2D12;margin-top:14px;">
+      산림청 유아숲체험원 현황 기준입니다. 최신 운영기간·예약 가능 여부는 방문 전 전화로 확인하세요.
+    </p>
   </div>
-
-  {% if page.expguide and page.expguide != "" %}
-  <div class="camp-section">
-    <h2>💡 이용 안내</h2>
-    <p style="line-height:1.8;">{{ page.expguide }}</p>
-  </div>
-  {% endif %}
 
   <!-- 같은 지역 -->
   <div class="region-camps">
-    <h2>📍 {{ page.doShort }} 다른 수목원·휴양림</h2>
+    <h2>📍 {{ page.doShort }} 다른 자연명소</h2>
     <div id="regionCampsGrid" class="camp-grid"></div>
     <p style="margin-top:16px;">
       <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }} 자연휴양림 전체 보기 →</a>
@@ -98,14 +83,14 @@ layout: default
     <div class="camp-grid" id="recentGrid"></div>
   </div>
 
-  <!-- 이전/다음 수목원 -->
+  <!-- 이전/다음 -->
   <div class="camp-prevnext" id="prevnextSection" style="display:none">
     <a href="#" class="prevnext-btn prevnext-prev" id="prevBtn">
-      <span class="prevnext-label">◀ 이전 수목원</span>
+      <span class="prevnext-label">◀ 이전 유아숲체험원</span>
       <span class="prevnext-name" id="prevName"></span>
     </a>
     <a href="#" class="prevnext-btn prevnext-next" id="nextBtn">
-      <span class="prevnext-label">다음 수목원 ▶</span>
+      <span class="prevnext-label">다음 유아숲체험원 ▶</span>
       <span class="prevnext-name" id="nextName"></span>
     </a>
   </div>
@@ -122,18 +107,18 @@ layout: default
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "{{ page.arbName | escape }}",
+    "name": "{{ page.kfName | escape }}",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "{{ page.address | escape }}",
       "addressCountry": "KR"
-    }{% if page.latitude and page.latitude != "" %},
+    }{% if page.phone and page.phone != "" %},
+    "telephone": "{{ page.phone | escape }}"{% endif %}{% if page.latitude and page.latitude != "" %},
     "geo": {
       "@type": "GeoCoordinates",
       "latitude": {{ page.latitude }},
       "longitude": {{ page.longitude }}
-    }{% endif %}{% if page.image and page.image != "" %},
-    "image": "{{ page.image }}"{% endif %}
+    }{% endif %}
   }
   </script>
 
@@ -160,33 +145,23 @@ layout: default
       document.getElementById('regionCampsGrid').innerHTML = nearby.map(itemCard).join('');
     }
 
-    // 이전/다음 수목원 (같은 지역 내 이름순 정렬 후 순환)
+    // 이전/다음 유아숲체험원 (같은 지역 내 이름순 정렬 후 순환)
     const regionOrdered = all
-      .filter(f => f.kind === 'arboretum' && f.doShort === currentRegion)
-      .sort((a, b) => (a.arbName || '').localeCompare(b.arbName || '', 'ko'));
+      .filter(f => f.kind === 'kidforest' && f.doShort === currentRegion)
+      .sort((a, b) => (a.kfName || '').localeCompare(b.kfName || '', 'ko'));
     const curIdx = regionOrdered.findIndex(f => f.slug === currentSlug);
     if (curIdx !== -1 && regionOrdered.length > 1) {
       const prevF = regionOrdered[(curIdx - 1 + regionOrdered.length) % regionOrdered.length];
       const nextF = regionOrdered[(curIdx + 1) % regionOrdered.length];
-      document.getElementById('prevBtn').href = `/arboretum/${prevF.slug}/`;
-      document.getElementById('prevName').textContent = prevF.arbName;
-      document.getElementById('nextBtn').href = `/arboretum/${nextF.slug}/`;
-      document.getElementById('nextName').textContent = nextF.arbName;
+      document.getElementById('prevBtn').href = `/kidforest/${prevF.slug}/`;
+      document.getElementById('prevName').textContent = prevF.kfName;
+      document.getElementById('nextBtn').href = `/kidforest/${nextF.slug}/`;
+      document.getElementById('nextName').textContent = nextF.kfName;
       document.getElementById('prevnextSection').style.display = 'grid';
     }
   } catch(e) {}
 
   function itemCard(f) {
-    if (f.kind === 'kidforest') {
-      return `<a class="camp-card" href="/kidforest/${f.slug}/">
-        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
-        <div class="camp-card-body">
-          <div class="camp-card-name">${f.kfName}</div>
-          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
-          <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
-        </div>
-      </a>`;
-    }
     if (f.kind === 'arboretum') {
       return `<a class="camp-card" href="/arboretum/${f.slug}/">
         ${f.image ? `<img class="camp-card-img" src="${f.image}" alt="${f.arbName}" loading="lazy">` : `<div class="camp-card-img-placeholder">🌳</div>`}
@@ -204,6 +179,16 @@ layout: default
           <div class="camp-card-name">${f.healingNm}</div>
           <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
           <div class="camp-card-tags"><span class="tag tag-env">🌿 치유의숲</span></div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'kidforest') {
+      return `<a class="camp-card" href="/kidforest/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.kfName}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
         </div>
       </a>`;
     }
@@ -220,14 +205,13 @@ layout: default
 </script>
 
 <script>
-// 최근 본 자연명소 (localStorage, 휴양림/치유의숲/수목원 통합)
+// 최근 본 자연명소 (localStorage, 휴양림/치유의숲/수목원/유아숲체험원 통합)
 (() => {
   const KEY = 'wooarest_recent';
   const current = {
-    kind: 'arboretum',
+    kind: 'kidforest',
     slug: {{ page.slug | jsonify }},
-    arbName: {{ page.arbName | jsonify }},
-    image: {{ page.image | jsonify }},
+    kfName: {{ page.kfName | jsonify }},
     sigungu: {{ page.sigungu | jsonify }},
     doShort: {{ page.doShort | jsonify }}
   };
@@ -244,16 +228,6 @@ layout: default
   try { localStorage.setItem(KEY, JSON.stringify(updated)); } catch (e) {}
 
   function recentCard(f) {
-    if (f.kind === 'kidforest') {
-      return `<a class="camp-card" href="/kidforest/${f.slug}/">
-        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
-        <div class="camp-card-body">
-          <div class="camp-card-name">${f.kfName}</div>
-          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
-          <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
-        </div>
-      </a>`;
-    }
     if (f.kind === 'arboretum') {
       return `<a class="camp-card" href="/arboretum/${f.slug}/">
         ${f.image ? `<img class="camp-card-img" src="${f.image}" alt="${f.arbName}" loading="lazy">` : `<div class="camp-card-img-placeholder">🌳</div>`}
@@ -271,6 +245,16 @@ layout: default
           <div class="camp-card-name">${f.healingNm}</div>
           <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
           <div class="camp-card-tags"><span class="tag tag-env">🌿 치유의숲</span></div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'kidforest') {
+      return `<a class="camp-card" href="/kidforest/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.kfName}</div>
+          <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
         </div>
       </a>`;
     }

@@ -102,6 +102,17 @@ description: 전국 자연휴양림·치유의숲·수목원 위치, 요금, 시
     <p style="color:#6B7280;">로딩 중...</p>
   </div>
 </div>
+
+<!-- 유아숲체험원 -->
+<div style="background:white;">
+<div class="section" style="padding-top:40px;padding-bottom:40px;">
+  <h2 class="section-title">🧒 유아숲체험원 <span id="kidforestCount" style="font-size:.85rem;color:#6B7280;font-weight:400;"></span></h2>
+  <p style="color:#6B7280;margin-bottom:20px;font-size:.92rem;">어린이집·유치원 숲체험 프로그램을 운영하는 유아숲체험원 정보입니다.</p>
+  <div class="camp-grid" id="kidforestForests">
+    <p style="color:#6B7280;">로딩 중...</p>
+  </div>
+</div>
+</div>
 </div>
 <aside class="tool-sidebar"></aside>
 </div>
@@ -117,7 +128,7 @@ async function loadIndex() {
   const resp = await fetch('/search_index.json');
   fuseIndex = await resp.json();
   fuse = new Fuse(fuseIndex, {
-    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address', 'arbName'],
+    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address', 'arbName', 'kfName'],
     threshold: 0.35,
     minMatchCharLength: 1,
   });
@@ -125,6 +136,7 @@ async function loadIndex() {
   renderStay();
   renderHealing();
   renderArboretum();
+  renderKidforest();
 }
 
 function updateCounts() {
@@ -155,6 +167,13 @@ function renderArboretum() {
   const arboretum = fuseIndex.filter(f => f.kind === 'arboretum');
   document.getElementById('arboretumCount').textContent = `총 ${arboretum.length}곳`;
   document.getElementById('arboretumForests').innerHTML = arboretum.slice(0, 12).map(itemCard).join('');
+}
+
+function renderKidforest() {
+  if (!fuseIndex) return;
+  const kidforest = fuseIndex.filter(f => f.kind === 'kidforest');
+  document.getElementById('kidforestCount').textContent = `총 ${kidforest.length}곳`;
+  document.getElementById('kidforestForests').innerHTML = kidforest.slice(0, 12).map(itemCard).join('');
 }
 
 function doSearch() {
@@ -199,6 +218,16 @@ function itemCard(f) {
       </div>
     </a>`;
   }
+  if (f.kind === 'kidforest') {
+    return `<a class="camp-card" href="/kidforest/${f.slug}/">
+      <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.kfName}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
+      </div>
+    </a>`;
+  }
   return `<a class="camp-card" href="/forest/${f.slug}/">
     <div class="camp-card-img-placeholder">🌲</div>
     <div class="camp-card-body">
@@ -235,6 +264,18 @@ function searchResultItem(f) {
           <div class="search-result-name">${f.healingNm}</div>
           <div class="search-result-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
           <span class="search-result-tag">🌿 치유의숲${f.manageType ? ' · ' + f.manageType : ''}</span>
+        </div>
+      </a>
+    </div>`;
+  }
+  if (f.kind === 'kidforest') {
+    return `<div class="search-result-item">
+      <a href="/kidforest/${f.slug}/">
+        <div class="search-result-thumb" style="background:#fde68a;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:6px;">🧒</div>
+        <div>
+          <div class="search-result-name">${f.kfName}</div>
+          <div class="search-result-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+          <span class="search-result-tag">🧒 유아숲체험원</span>
         </div>
       </a>
     </div>`;

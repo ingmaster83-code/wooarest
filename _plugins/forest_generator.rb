@@ -9,6 +9,7 @@ module Jekyll
       forests = load_json(site, '_rawdata/forests.json')
       healings = load_json(site, '_rawdata/healing.json')
       arboretums = load_json(site, '_rawdata/arboretum.json')
+      kidforests = load_json(site, '_rawdata/kidforest.json')
 
       Jekyll.logger.info "ForestGenerator:", "#{forests.size}개 휴양림 페이지 생성 중..."
       forests.each do |f|
@@ -28,9 +29,15 @@ module Jekyll
         site.pages << ArboretumPage.new(site, a)
       end
 
-      site.pages << SearchIndexPage.new(site, forests, healings, arboretums)
+      Jekyll.logger.info "ForestGenerator:", "#{kidforests.size}개 유아숲체험원 페이지 생성 중..."
+      kidforests.each do |k|
+        next if k['slug'].to_s.strip.empty?
+        site.pages << KidForestPage.new(site, k)
+      end
 
-      Jekyll.logger.info "ForestGenerator:", "완료 (휴양림 #{forests.size}개 + 치유의숲 #{healings.size}개 + 수목원 #{arboretums.size}개)"
+      site.pages << SearchIndexPage.new(site, forests, healings, arboretums, kidforests)
+
+      Jekyll.logger.info "ForestGenerator:", "완료 (휴양림 #{forests.size}개 + 치유의숲 #{healings.size}개 + 수목원 #{arboretums.size}개 + 유아숲체험원 #{kidforests.size}개)"
     end
 
     private
@@ -137,8 +144,38 @@ module Jekyll
     end
   end
 
+  class KidForestPage < Page
+    def initialize(site, k)
+      @site = site
+      @base = site.source
+      @dir  = "kidforest/#{k['slug']}"
+      @name = 'index.html'
+
+      self.process(@name)
+      self.read_yaml(File.join(@base, '_layouts'), 'kidforest.html')
+      self.data.merge!(k)
+      self.data['layout']      = 'kidforest'
+      self.data['title']       = build_title(k)
+      self.data['description'] = build_desc(k)
+    end
+
+    private
+
+    def build_title(k)
+      name = k['kfName'] || ''
+      loc  = [k['doShort'], k['sigungu']].compact.join(' ')
+      "#{name} #{loc} 위치 운영기간 참여방법"
+    end
+
+    def build_desc(k)
+      name = k['kfName'] || ''
+      loc  = [k['doShort'], k['sigungu']].compact.join(' ')
+      "#{loc} #{name} 위치, 운영기간, 참여방법을 확인하세요."[0, 155]
+    end
+  end
+
   class SearchIndexPage < Page
-    def initialize(site, forests, healings, arboretums = [])
+    def initialize(site, forests, healings, arboretums = [], kidforests = [])
       @site = site
       @base = site.source
       @dir  = ''
@@ -190,7 +227,23 @@ module Jekyll
         }
       end
 
-      self.content = (forest_index + healing_index + arboretum_index).to_json
+      kidforest_index = kidforests.map do |k|
+        {
+          'kind'        => 'kidforest',
+          'slug'        => k['slug'],
+          'kfName'      => k['kfName'],
+          'doShort'     => k['doShort'],
+          'sigungu'     => k['sigungu'],
+          'address'     => k['address'],
+          'phone'       => k['phone'],
+          'operPeriod'  => k['operPeriod'],
+          'participWay' => k['participWay'],
+          'latitude'    => k['latitude'],
+          'longitude'   => k['longitude'],
+        }
+      end
+
+      self.content = (forest_index + healing_index + arboretum_index + kidforest_index).to_json
     end
 
     def output   = self.content

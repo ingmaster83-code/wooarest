@@ -57,6 +57,13 @@ layout: default
     <div class="camp-grid" id="arboretumGrid"></div>
   </div>
 
+  <!-- 이 지역 유아숲체험원 -->
+  <div id="kidforestSection" style="display:none;margin-top:32px;">
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">🧒 {{ page.do_name }} 유아숲체험원</h2>
+    <p style="color:#6B7280;font-size:.88rem;margin-bottom:16px;">어린이집·유치원 숲체험 프로그램을 운영하는 곳입니다.</p>
+    <div class="camp-grid" id="kidforestGrid"></div>
+  </div>
+
   <!-- 안내 텍스트 -->
   <div style="margin-top:40px;background:#F9FAFB;border-radius:14px;padding:24px 28px;">
     <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px;">{{ page.do_name }} 자연휴양림 이용 안내</h2>
@@ -102,6 +109,12 @@ let allForests = [];
     document.getElementById('arboretumSection').style.display = 'block';
     document.getElementById('arboretumGrid').innerHTML = arboretums.map(arboretumCard).join('');
   }
+
+  const kidforests = all.filter(f => f.kind === 'kidforest' && f.doShort === DO_NAME);
+  if (kidforests.length > 0) {
+    document.getElementById('kidforestSection').style.display = 'block';
+    document.getElementById('kidforestGrid').innerHTML = kidforests.map(kidforestCard).join('');
+  }
 })();
 
 function healingCard(f) {
@@ -124,6 +137,17 @@ function arboretumCard(f) {
       <div class="camp-card-name">${f.arbName}</div>
       <div class="camp-card-loc">📍 ${f.sigungu || ''}</div>
       <div class="camp-card-tags"><span class="tag tag-env">🌳 수목원</span></div>
+    </div>
+  </a>`;
+}
+
+function kidforestCard(f) {
+  return `<a class="camp-card" href="/kidforest/${f.slug}/">
+    <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
+    <div class="camp-card-body">
+      <div class="camp-card-name">${f.kfName}</div>
+      <div class="camp-card-loc">📍 ${f.sigungu || ''}</div>
+      <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
     </div>
   </a>`;
 }

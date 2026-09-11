@@ -28,7 +28,7 @@ let allForests = [];
   const resp = await fetch('/search_index.json');
   allForests = await resp.json();
   fuse = new Fuse(allForests, {
-    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address'],
+    keys: ['rcrfrstNm', 'doShort', 'sigungu', 'rdnmadr', 'rcrfrstType', 'healingNm', 'address', 'arbName', 'kfName'],
     threshold: 0.35,
     minMatchCharLength: 1,
   });
@@ -63,6 +63,26 @@ function doSearch() {
             ${f.manageType ? `<span class="tag tag-type">${f.manageType}</span>` : ''}
             <span class="tag tag-env">🌿 치유의숲</span>
           </div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'arboretum') {
+      return `<a class="camp-card" href="/arboretum/${f.slug}/">
+        ${f.image ? `<img class="camp-card-img" src="${f.image}" alt="${f.arbName}" loading="lazy">` : `<div class="camp-card-img-placeholder">🌳</div>`}
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.arbName}</div>
+          <div class="camp-card-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🌳 수목원</span></div>
+        </div>
+      </a>`;
+    }
+    if (f.kind === 'kidforest') {
+      return `<a class="camp-card" href="/kidforest/${f.slug}/">
+        <div class="camp-card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🧒</div>
+        <div class="camp-card-body">
+          <div class="camp-card-name">${f.kfName}</div>
+          <div class="camp-card-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+          <div class="camp-card-tags"><span class="tag tag-env">🧒 유아숲체험원</span></div>
         </div>
       </a>`;
     }

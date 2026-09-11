@@ -7,7 +7,7 @@
   <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
   <link rel="canonical" href="{{ page.url | absolute_url }}">
 
-  {% if page.rcrfrstNm or page.layout == 'healing' or page.layout == 'arboretum' %}
+  {% if page.rcrfrstNm or page.layout == 'healing' or page.layout == 'arboretum' or page.layout == 'kidforest' %}
   <meta property="og:type" content="article">
   <meta property="og:title" content="{{ page.title }} | 우아휴양림">
   <meta property="og:description" content="{{ page.description }}">
@@ -52,7 +52,7 @@
 <script src="{{ '/assets/js/wooa-sites-bar.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/ad-dev-placeholder.js' | relative_url }}"></script>
 
-{% unless page.layout == 'forest' or page.layout == 'healing' or page.layout == 'arboretum' or page.layout == 'region' or page.url == '/' %}
+{% unless page.layout == 'forest' or page.layout == 'healing' or page.layout == 'arboretum' or page.layout == 'kidforest' or page.layout == 'region' or page.url == '/' %}
 <div class="top-ad-bar">
   {% include ad.html %}
 </div>
@@ -75,7 +75,7 @@
       <a href="{{ '/privacy/' | relative_url }}">개인정보처리방침</a>
     </p>
     <p class="copyright">&copy; 2026 우아휴양림 · WooaHouse. All rights reserved.</p>
-    {% if page.layout == 'forest' or page.layout == 'healing' or page.layout == 'arboretum' %}
+    {% if page.layout == 'forest' or page.layout == 'healing' or page.layout == 'arboretum' or page.layout == 'kidforest' %}
     <p style="margin:6px 0 0;font-size:.7rem;opacity:.55;">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
     {% endif %}
   </div>
