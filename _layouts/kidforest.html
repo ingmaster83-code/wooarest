@@ -52,9 +52,17 @@ layout: default
     {% include ad.html %}
   </div>
 
+  <!-- 소개 -->
+  {% if page.introText and page.introText != "" %}
+  <div class="camp-section">
+    <h2>🧒 소개</h2>
+    <p style="line-height:1.8;">{{ page.introText }}</p>
+  </div>
+  {% endif %}
+
   <!-- 이용 정보 -->
   <div class="camp-section">
-    <h2>🧒 이용 정보</h2>
+    <h2>이용 정보</h2>
     <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
       {% if page.operPeriod and page.operPeriod != "" %}
       <tr><td style="padding:8px 0;color:#6B7280;width:110px;vertical-align:top;">운영기간</td><td style="white-space:pre-line;">{{ page.operPeriod }}</td></tr>

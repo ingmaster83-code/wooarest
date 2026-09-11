@@ -69,6 +69,89 @@ def extract_city(addr):
     return tokens[1] if len(tokens) >= 2 else ""
 
 
+def eun_neun(word: str) -> str:
+    """받침 유무에 따라 은/는 선택."""
+    if not word:
+        return "는"
+    last = word[-1]
+    if not ("가" <= last <= "힣"):
+        return "는"
+    jong = (ord(last) - ord("가")) % 28
+    return "는" if jong == 0 else "은"
+
+
+def ro_euro(word: str) -> str:
+    """받침 유무(+ㄹ받침)에 따라 로/으로 선택."""
+    if not word:
+        return "으로"
+    last = word[-1]
+    if not ("가" <= last <= "힣"):
+        return "으로"
+    jong = (ord(last) - ord("가")) % 28
+    return "로" if jong in (0, 8) else "으로"  # 0=받침없음, 8=ㄹ받침
+
+
+def period_sentence(period: str) -> str:
+    period = (period or "").strip()
+    if not period:
+        return ""
+    if "미운영" in period:
+        return "올해는 운영하지 않는 것으로 확인됩니다. 재개 여부는 아래 연락처로 문의하세요."
+    if period == "연중":
+        return "연중 운영합니다."
+    m = re.match(r"\d{4}-(\d{2})~\d{4}-(\d{2})", period)
+    if m:
+        m1, m2 = int(m.group(1)), int(m.group(2))
+        if m1 == 1 and m2 == 12:
+            return "연중 운영합니다."
+        return f"{m1}월부터 {m2}월까지 운영합니다."
+    return f"운영기간은 {period}입니다."
+
+
+def particip_sentence(participway: str) -> str:
+    p = (participway or "").strip()
+    if not p or "미운영" in p:
+        return ""
+    parts = [x.strip() for x in re.split(r"[/,]", p) if x.strip()]
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return f"참여 신청은 {parts[0]}{ro_euro(parts[0])} 할 수 있습니다."
+    joined = ", ".join(parts)
+    return f"참여 신청은 {joined} 등으로 할 수 있습니다."
+
+
+def build_intro(k: dict, sido_count: int, sigungu_count: int, siblings: dict) -> str:
+    name = k["kfName"]
+    sido, sigungu = k["doShort"], k["sigungu"]
+    loc = f"{sido} {sigungu}" if sigungu else sido
+    sentences = [f"{name}{eun_neun(name)} {loc}에 있는 유아숲체험원입니다."]
+
+    ps = period_sentence(k["operPeriod"])
+    if ps:
+        sentences.append(ps)
+
+    ps2 = particip_sentence(k["participWay"])
+    if ps2:
+        sentences.append(ps2)
+
+    if sigungu_count == 1:
+        sentences.append(f"{sigungu}에는 유아숲체험원이 이곳 하나뿐입니다.")
+    elif sigungu_count > 1:
+        sentences.append(f"{sido}에는 유아숲체험원이 총 {sido_count}곳 있으며, {sigungu}에는 이곳을 포함해 {sigungu_count}곳이 있습니다.")
+    else:
+        sentences.append(f"{sido}에는 유아숲체험원이 총 {sido_count}곳 있습니다.")
+
+    sib_parts = []
+    for label, cnt in siblings.items():
+        if cnt > 0:
+            sib_parts.append(f"{label} {cnt}곳")
+    if sib_parts:
+        sentences.append(f"{sido} 지역에는 " + ", ".join(sib_parts) + "도 있어 함께 둘러볼 수 있습니다.")
+
+    return " ".join(sentences)
+
+
 def search_kakao(query: str, attempt: int = 1) -> dict:
     try:
         resp = requests.get(KAKAO_SEARCH_URL, params={"query": query, "size": 1},
@@ -145,6 +228,33 @@ def main():
             "longitude": lng,
             "slug": slug,
         })
+
+    # --- introText 생성: 지역 집계 + 형제 카테고리(자연휴양림/치유의숲/수목원) 개수 ---
+    sido_count = Counter(o["doShort"] for o in out)
+    sigungu_count = Counter((o["doShort"], o["sigungu"]) for o in out)
+
+    def load_sibling(fname):
+        p = ROOT / "_rawdata" / fname
+        if not p.exists():
+            return []
+        return json.loads(p.read_text(encoding="utf-8"))
+
+    forests = load_sibling("forests.json")
+    healings = load_sibling("healing.json")
+    arboretums = load_sibling("arboretum.json")
+    forest_by_sido = Counter(f.get("doShort") for f in forests)
+    healing_by_sido = Counter(h.get("doShort") for h in healings)
+    arb_by_sido = Counter(a.get("doShort") for a in arboretums)
+
+    for o in out:
+        siblings = {
+            "자연휴양림": forest_by_sido.get(o["doShort"], 0),
+            "치유의숲": healing_by_sido.get(o["doShort"], 0),
+            "수목원": arb_by_sido.get(o["doShort"], 0),
+        }
+        o["introText"] = build_intro(
+            o, sido_count[o["doShort"]], sigungu_count[(o["doShort"], o["sigungu"])], siblings
+        )
 
     GEO_CACHE.write_text(json.dumps(geo_cache, ensure_ascii=False, indent=2), encoding="utf-8")
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -168,6 +168,8 @@ module Jekyll
     end
 
     def build_desc(k)
+      intro = k['introText'].to_s
+      return intro[0, 155] unless intro.empty?
       name = k['kfName'] || ''
       loc  = [k['doShort'], k['sigungu']].compact.join(' ')
       "#{loc} #{name} 위치, 운영기간, 참여방법을 확인하세요."[0, 155]
