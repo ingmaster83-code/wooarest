@@ -9,6 +9,7 @@ _rawdata/kidforest_raw.csv (산림청_유아숲체험원 현황, CP949 CSV, 컬�
 재실행 시 이미 지오코딩된 주소는 캐시(_rawdata/kidforest_geo_cache.json)로 건너뜀.
 사용법: python scripts/parse_kidforest.py
 """
+import os
 import csv
 import hashlib
 import json
@@ -27,7 +28,7 @@ RAW_CSV = ROOT / "_rawdata" / "kidforest_raw.csv"
 GEO_CACHE = ROOT / "_rawdata" / "kidforest_geo_cache.json"
 OUT = ROOT / "_rawdata" / "kidforest.json"
 
-KAKAO_REST_KEY = "02a25c9d9c8a834c12938e84a5235f6d"
+KAKAO_REST_KEY = os.environ.get("KAKAO_REST_KEY") or sys.exit("환경변수 KAKAO_REST_KEY 가 필요합니다(키를 코드에 넣지 마세요).")
 KAKAO_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/keyword.json"
 KAKAO_HEADERS = {"Authorization": f"KakaoAK {KAKAO_REST_KEY}"}
 
